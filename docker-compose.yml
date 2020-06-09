@@ -1,0 +1,56 @@
+version: '2'
+
+services:
+    # The Application setup php
+    php:
+        container_name: php
+        build:
+            context: ./setup/php/Dockerfile
+        working_dir: /var/www
+        volumes:
+            - ./:/var/www/
+        networks:
+            - app-network
+    # The Web Server
+    nginx:
+        container_name: nginx
+        build:
+            context: ./setup/nginx/Dockerfile
+        volumes:
+            - ./:/var/www/
+        working_dir: /var/www
+        ports:
+            - 2020:80
+        networks:
+            - app-network
+    # MySQL Service
+    mysql:
+        container_name: mysql
+        image: mysql:5.7
+        ports:
+            - "3307:3306"
+        environment:
+            MYSQL_DATABASE: laravel
+            MYSQL_USER: root
+            MYSQL_PASSWORD: secret
+            MYSQL_ROOT_PASSWORD: root
+        volumes:
+            - ./docker/mysql/dbdata:/var/lib/mysql
+        networks:
+            - app-network
+    phpmyadmin:
+        container_name: phpmyadmin
+        image: phpmyadmin/phpmyadmin
+        environment:
+            PMA_ARBITRARY: 1
+            MYSQL_USER: root
+            MYSQL_PASSWORD: secret
+            MYSQL_ROOT_PASSWORD: root
+        ports:
+            - "8080:80"
+        networks:
+            - app-network
+#Docker Networks
+networks:
+  app-network:
+    driver: bridge
